@@ -3,7 +3,8 @@ import json
 from .constants import NOT_VALID, VALID_DATA_LIST, VALID_DATA
 
 
-def validate_data(message):
+def validate_data(message: str) -> str:
+    """Проверяет валидность данных в сообщении"""
     try:
         data = json.loads(message)
     except json.JSONDecodeError:

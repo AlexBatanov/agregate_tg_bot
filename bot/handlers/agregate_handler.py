@@ -11,6 +11,7 @@ agreagte_router = Router()
 
 @agreagte_router.message()
 async def agregate_salary(message: types.Message, collection: MDB):
+    """Обрабатывает запрос на агрегацию данных о зарплатах."""
     validation_result = validate_data(message.text)
 
     if validation_result:

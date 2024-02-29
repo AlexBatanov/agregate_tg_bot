@@ -12,16 +12,15 @@ from handlers.agregate_handler import agreagte_router
 
 
 load_dotenv()
-TOKEN = getenv('TOKEN')
 
 
 async def main():
-    client = AsyncIOMotorClient('localhost', 27017)
+    client = AsyncIOMotorClient(getenv('HOST_DB'), getenv('PORT_DB'))
     db = client['test']
     collection = db['sample_collection']
 
     dp = Dispatcher()
-    bot = Bot(TOKEN, parse_mode=enums.ParseMode.HTML)
+    bot = Bot(getenv('TOKEN'), parse_mode=enums.ParseMode.HTML)
 
     dp.include_router(start_router)
     dp.include_router(agreagte_router)
