@@ -15,7 +15,7 @@ load_dotenv()
 
 
 async def main():
-    client = AsyncIOMotorClient(getenv('HOST_DB'), getenv('PORT_DB'))
+    client = AsyncIOMotorClient(getenv('HOST_DB'), int(getenv('PORT_DB')))
     db = client['test']
     collection = db['sample_collection']
 
