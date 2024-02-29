@@ -8,6 +8,8 @@ from aiogram import Bot, Dispatcher, enums
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from handlers.start_handler import start_router
+from handlers.agregate_handler import agreagte_router
+
 
 load_dotenv()
 TOKEN = getenv('TOKEN')
@@ -19,7 +21,10 @@ async def main():
 
     dp = Dispatcher()
     bot = Bot(TOKEN, parse_mode=enums.ParseMode.HTML)
+
     dp.include_router(start_router)
+    dp.include_router(agreagte_router)
+
     await dp.start_polling(bot, db=db)
 
 
