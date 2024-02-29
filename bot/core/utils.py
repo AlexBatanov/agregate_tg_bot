@@ -136,27 +136,6 @@ def add_missing_ones(
     return list(time_periods.keys()), list(time_periods.values())
 
 
-def increment_date(
-    date: datetime, increment: int, group_type: str
-) -> datetime:
-    """
-    Увеличивает дату на указанное количество единиц
-    в зависимости от типа группировки.
-
-    Args:
-        date (datetime): Исходная дата.
-        increment (int): Количество единиц для увеличения даты.
-        group_type (str): Тип группировки данных ('day', 'hour' и т.д.).
-
-    Returns:
-        datetime: Новая дата после увеличения на указанное количество единиц.
-    """
-    if group_type == 'day':
-        return date + timedelta(days=increment)
-    elif group_type == 'hour':
-        return date + timedelta(hours=increment)
-
-
 def generate_time_periods(start_date, end_date, interval):
     time_periods = {}
     current_date = start_date
