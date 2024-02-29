@@ -1,3 +1,4 @@
+import json
 from aiogram import Router, types
 
 from motor.core import AgnosticDatabase as MDB
@@ -18,4 +19,5 @@ async def agregate_salary(message: types.Message, collection: MDB):
         return await message.answer(validation_result)
 
     data = await agregate_salaries(collection, message.text)
-    await message.answer(str(data))
+    data_json = json.dumps(data)
+    await message.answer(data_json)

@@ -44,8 +44,7 @@ async def agregate_salaries(collection: MDB, text: str) -> Dict:
     pipeline = create_pipeline(dt_from, dt_upto, group_type)
     result = collection.aggregate(pipeline)
 
-    dataset = []
-    labels = []
+    data = {}
 
     async for doc in result:
         date = datetime(
@@ -54,10 +53,9 @@ async def agregate_salaries(collection: MDB, text: str) -> Dict:
             day=doc['_id'].get('day', 1),
             hour=doc['_id'].get('hour', 0)
         )
-        labels.append(date.isoformat())
-        dataset.append(doc['total_value'])
+        data[date.isoformat()] = doc['total_value']
     
-    labels, dataset = add_missing_ones(dataset, labels, dt_from, dt_upto, group_type)
+    labels, dataset = add_missing_ones(data, dt_from, dt_upto, group_type)
 
     return {"dataset": dataset, "labels": labels}
 
@@ -112,7 +110,7 @@ def create_pipeline(
 
 
 def add_missing_ones(
-    dataset: List, labels: List, 
+    data: Dict, 
     dt_from: datetime, dt_upto: datetime, group_type: str
 ) -> Tuple[List[str], List[float]]:
     """
@@ -120,8 +118,7 @@ def add_missing_ones(
     и метки времени для соответствия заданному диапазону и группировке.
 
     Args:
-        dataset (list): Список значений данных.
-        labels (list): Список меток времени соответствующих значениям данных.
+        data (dict): Словарь дата: зарплата.
         dt_from (datetime): Начальная дата и время диапазона данных.
         dt_upto (datetime): Конечная дата и время диапазона данных.
         group_type (str): Тип группировки данных ('day', 'month', 'hour').
@@ -131,36 +128,12 @@ def add_missing_ones(
             и данными после добавления недостающих значений.
     """
 
-    added_dataset = []
-    added_labels = []
+    time_periods = generate_time_periods(dt_from, dt_upto, group_type)
     
-    last_date = datetime.fromisoformat(labels[-1])
-    
-    if group_type == 'day':
-        last_date = last_date.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        dt_upto = dt_upto.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-    if group_type == 'month':
-        return labels, dataset
+    for key, value in data.items():
+        time_periods[key] = value
 
-    while dt_from < datetime.fromisoformat(labels[0]):
-        added_labels.append(dt_from.isoformat())
-        added_dataset.append(0)
-        dt_from = increment_date(dt_from, 1, group_type)
-
-    labels = added_labels + labels
-    dataset = added_dataset + dataset
-
-
-    while dt_upto > last_date:
-        last_date = increment_date(last_date, 1, group_type)
-        dataset.append(0)
-        labels.append(last_date.isoformat())
-
-    return labels, dataset
+    return list(time_periods.keys()), list(time_periods.values())
 
 
 def increment_date(
@@ -182,3 +155,29 @@ def increment_date(
         return date + timedelta(days=increment)
     elif group_type == 'hour':
         return date + timedelta(hours=increment)
+
+
+def generate_time_periods(start_date, end_date, interval):
+    time_periods = {}
+    current_date = start_date
+
+    while current_date <= end_date:
+        if interval == 'day':
+            time_period_key = current_date.strftime('%Y-%m-%dT%H:%M:%S')
+        elif interval == 'month':
+            time_period_key = current_date.strftime('%Y-%m-01T00:00:00')
+        elif interval == 'hour':
+            time_period_key = current_date.strftime('%Y-%m-%dT%H:00:00')
+
+        time_periods[time_period_key] = 0
+        if interval == 'day':
+            current_date += timedelta(days=1)
+        elif interval == 'month':
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+        elif interval == 'hour':
+            current_date += timedelta(hours=1)
+
+    return time_periods
