@@ -17,7 +17,8 @@ TOKEN = getenv('TOKEN')
 
 async def main():
     client = AsyncIOMotorClient('localhost', 27017)
-    db = client['test']['sample_collection']
+    db = client['test']
+    collection = db['sample_collection']
 
     dp = Dispatcher()
     bot = Bot(TOKEN, parse_mode=enums.ParseMode.HTML)
@@ -25,7 +26,7 @@ async def main():
     dp.include_router(start_router)
     dp.include_router(agreagte_router)
 
-    await dp.start_polling(bot, db=db)
+    await dp.start_polling(bot, collection=collection)
 
 
 if __name__ == "__main__":
